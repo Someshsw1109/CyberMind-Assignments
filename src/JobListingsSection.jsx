@@ -5,28 +5,20 @@ import { BriefcaseIcon, DollarSignIcon, MapPinIcon } from "lucide-react";
 import React from "react";
 
 export default function JobListingsSection({ jobListings }) {
-  // Function to calculate time difference
-  const getTimeDifference = (createdAt) => {
-    const now = new Date();
+  // Format today's date
+  const getDisplayTime = (createdAt) => {
     const createdDate = new Date(createdAt);
+    const now = new Date();
 
-    // If the createdAt date is in the future, treat it as "just created"
     if (createdDate > now) {
       return "Just now";
     }
 
-    const diffInMs = now - createdDate;
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    const diffInDays = Math.floor(diffInHours / 24);
-
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes}m Ago`;
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h Ago`;
-    } else {
-      return `${diffInDays}d Ago`;
-    }
+    return now.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
@@ -51,19 +43,17 @@ export default function JobListingsSection({ jobListings }) {
                 />
               </div>
 
-              {/* Title and Time Badge - now in a column below the image on mobile */}
+              {/* Title and Time Badge */}
               <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                {/* Job Title - full width on mobile, then flex on sm+ */}
                 <h3 className="text-lg md:text-xl font-bold text-gray-900">
                   {job.title}
                 </h3>
 
-                {/* Posted Time Badge - aligned to right on all screens */}
                 <Badge
                   variant="lightBlue"
                   className="flex-shrink-0 bg-blue-100 text-blue-800 hover:bg-blue-100 px-2 py-0.5 md:px-3 md:py-1 rounded-full text-xs md:text-sm sm:self-center"
                 >
-                  {getTimeDifference(job.createdAt)}
+                  {getDisplayTime(job.createdAt)}
                 </Badge>
               </div>
             </div>
