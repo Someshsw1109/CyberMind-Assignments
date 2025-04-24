@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import NavigationBarSection from "./NavigationBarSection";
 import SearchBarSection from "./SearchBarSection";
@@ -7,7 +7,7 @@ import Loader from "./Loader";
 import { config } from "./config/config";
 
 const JobManagement = () => {
-  const [jobListings, setJobListings] = useState([]); // Initialize as an array
+  const [jobListings, setJobListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [filters, setFilters] = useState({
@@ -17,34 +17,33 @@ const JobManagement = () => {
     salaryRange: "",
   });
 
-  // Fetch jobs from API
-  const fetchJobs = async () => {
+  // ✅ Memoize fetchJobs so it's stable across renders
+  const fetchJobs = useCallback(async () => {
     setIsLoading(true);
     setIsError(false);
 
     try {
-     
       const response = await axios.get(`${config.backend.baseUrl}/jobs`, {
-        params: filters, // Send filters as query parameters
+        params: filters,
       });
-      setJobListings(response.data || []); // Ensure an array
+      setJobListings(response.data || []);
     } catch (error) {
       console.error("Error fetching job listings:", error);
       setIsError(true);
     } finally {
       setIsLoading(false);
     }
-  };
-  const handleNewJob = (newJob) => {
+  }, [filters]);
+
+  const handleNewJob = () => {
     fetchJobs();
   };
 
-  // Fetch jobs when the component mounts and when filters change
+  // ✅ useEffect now depends on stable fetchJobs
   useEffect(() => {
     fetchJobs();
-  }, [filters]); // Refetch when filters change
+  }, [fetchJobs]);
 
-  // Handle filter change from SearchBarSection
   const handleFilterChange = (newFilters) => {
     setFilters(newFilters);
   };

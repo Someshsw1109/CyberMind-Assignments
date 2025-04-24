@@ -7,12 +7,13 @@ import {
 } from "@/components/ui/navigation-menu";
 import React, { useState } from "react";
 import Form from "./Form";
-import axios from "axios";
+// Remove axios import if no longer needed here
+// import axios from "axios";
 import logo from "@/assets/cybermind_works_logo.jpeg";
-import { config } from "./config/config";
+import { config } from "./config/config"; // Keep if Form needs it via prop drilling (though Form imports it itself)
 import { Menu, X } from "lucide-react"; // Import icons for mobile menu
 
-export default function NavigationBarSection({ onJobSubmit }) {
+export default function NavigationBarSection({ onJobSubmit }) { // onJobSubmit prop now correctly passes data UPWARDS
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -28,15 +29,19 @@ export default function NavigationBarSection({ onJobSubmit }) {
   const handleCloseForm = () => setIsFormOpen(false);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
-  const handleJobSubmit = async (newJob) => {
-    try {
-      const response = await axios.post(`${config.backend.baseUrl}/jobs`, newJob);
-      const createdJob = response.data;
-      onJobSubmit(createdJob);
-      handleCloseForm();
-    } catch (error) {
-      console.error("Error creating job:", error);
+  // This function now simply handles the data AFTER the form successfully submitted
+  const handleFormSuccessfullySubmitted = (createdJobData) => {
+    console.log('Job created successfully in Form, data received:', createdJobData);
+
+    // Call the original onJobSubmit prop passed INTO this component
+    // This allows the PARENT component (that renders NavigationBarSection)
+    // to know that a job was submitted and receive its data.
+    if (onJobSubmit) {
+        onJobSubmit(createdJobData);
     }
+
+    // Close the form modal
+    handleCloseForm();
   };
 
   return (
@@ -45,10 +50,10 @@ export default function NavigationBarSection({ onJobSubmit }) {
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
           <div className="w-9 h-9 md:w-11 md:h-[45px]">
-            <img 
-              src={logo} 
-              alt="Logo" 
-              className="w-full h-full object-contain" 
+            <img
+              src={logo}
+              alt="Logo"
+              className="w-full h-full object-contain"
             />
           </div>
 
@@ -117,7 +122,8 @@ export default function NavigationBarSection({ onJobSubmit }) {
       {/* Job Form Modal */}
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <Form onClose={handleCloseForm} onJobSubmit={handleJobSubmit} />
+          {/* Pass the new handler function to the Form */}
+          <Form onClose={handleCloseForm} onJobSubmit={handleFormSuccessfullySubmitted} />
         </div>
       )}
     </>
